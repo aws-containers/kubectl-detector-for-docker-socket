@@ -20,18 +20,18 @@ You can run the plugin with no arguments and it will inspect all pods in all nam
 kubectl dsd
 ```
 
-[WIP] You can also specify a namespace to limit the scope of what will be scanned.
+You can also specify a namespace to limit the scope of what will be scanned.
 
 ```
 kubectl dsd --namespace kube-system
 ```
 
-[WIP] Use `help` to see all command options.
+Use `help` to see all command options.
 
 ## How it works
 
-DSD look for every pod in your Kubernetes cluster.
-If pods are part of a workload (eg Deployment, StatefulSet) then it inspects the workload type instead of pods directly.
+`dsd` looks for every pod in your Kubernetes cluster.
+If pods are part of a workload (eg Deployment, StatefulSet) it inspects the workload type instead of pods directly.
 
 It then inspects all of the volumes in the containers and looks for any volume with the name `docker.sock`
 

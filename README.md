@@ -1,4 +1,4 @@
-# Sock Detector for Docker (DSD)
+# Socket Detector for Docker (DSD)
 
 A `kubectl` plugin to detect if active Kubernetes workloads are mounting the docker socket
 

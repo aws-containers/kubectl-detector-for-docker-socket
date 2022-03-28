@@ -1,6 +1,6 @@
 # Detector for Docker Socket (DDS)
 
-A `kubectl` plugin to detect if active Kubernetes workloads are mounting the docker socket (`dock.sock`) volume.
+A `kubectl` plugin to detect if active Kubernetes workloads are mounting the docker socket (`docker.sock`) volume.
 
 ![](img/dds-demo.gif)
 

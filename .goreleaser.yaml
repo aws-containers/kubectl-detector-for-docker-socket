@@ -14,9 +14,9 @@ builds:
       - arm64
     ignore:
       - goos: linux
-        goarch: arm
+        goarch: arm64
       - goos: windows
-        goarch: arm
+        goarch: arm64
 checksum:
   name_template: 'checksums.txt'
 changelog:

@@ -1,0 +1,13 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: eks-test-1-21
+  region: us-east-1
+  version: '1.21'
+
+managedNodeGroups:
+  - name: ng-1
+    minSize: 1
+    maxSize: 2
+    desiredCapacity: 1

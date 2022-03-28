@@ -1,0 +1,39 @@
+apiVersion: krew.googlecontainertools.github.com/v1alpha2
+kind: Plugin
+metadata:
+  name: dds
+spec:
+  version: {{ .TagName }}
+  homepage: https://github.com/aws-containers/kubectl-detector-for-docker-socket
+  shortDescription: Detect if workloads are mounting docker.sock
+  description: |
+    This plugin checks workloads in a Kubernetes cluster or manifest files
+    and reports if any of the mounted volumes contain the string "docker.sock".
+  caveats: |
+    * If your docker socket is mounted at a different path name it will not
+    be checked.
+  platforms:
+  - selector:
+      matchLabels:
+        os: darwin
+        arch: amd64
+    {{addURIAndSha "https://github.com/aws-contaikubectl-detector-for-docker-socket/releases/download/{{ .TagName }}/kubectl-evict-pod_{{ .TagName }}_darwin_amd64.tar.gz" .TagName }}
+    bin: kubectl-dds
+  - selector:
+      matchLabels:
+        os: darwin
+        arch: arm64
+    {{addURIAndSha "https://github.com/aws-containers/kubectl-detector-for-docker-socket/releases/download/{{ .TagName }}/kubectl-evict-pod_{{ .TagName }}_darwin_arm64.tar.gz" .TagName }}
+    bin: kubectl-dds
+  - selector:
+      matchLabels:
+        os: linux
+        arch: amd64
+    {{addURIAndSha "https://github.com/aws-containers/kubectl-detector-for-docker-socket/releases/download/{{ .TagName }}/kubectl-evict-pod_{{ .TagName }}_linux_amd64.tar.gz" .TagName }}
+    bin: kubectl-dds
+  - selector:
+      matchLabels:
+        os: windows
+        arch: amd64
+    {{addURIAndSha "https://github.com/aws-containers/kubectl-detector-for-docker-socket/releases/download/{{ .TagName }}/kubectl-evict-pod_{{ .TagName }}_windows_amd64.tar.gz" .TagName }}
+    bin: kubectl-dds.exe

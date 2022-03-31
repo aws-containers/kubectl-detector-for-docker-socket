@@ -2,7 +2,7 @@
 
 A `kubectl` plugin to detect if active Kubernetes workloads are mounting the docker socket (`docker.sock`) volume.
 
-![](img/dds-demo.gif)
+![a short video showing the plugin being used](img/dds-demo.gif)
 
 ## Install
 
@@ -27,6 +27,14 @@ Supported workload types:
 * DaemonSets
 * Jobs
 * CronJobs
+
+## Why do you need this?
+
+If you're still not sure why you might need this plugin click on the image below to see a short video explaination.
+
+[![](img/dds.gif)](https://youtube.com/shorts/tc9CKLnAQgU)
+
+You can read the full FAQ about dockershim deprecation at https://k8s.io/dockershim
 
 ## Run
 

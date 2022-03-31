@@ -9,7 +9,7 @@ A `kubectl` plugin to detect if active Kubernetes workloads are mounting the doc
 Install the plugin with
 
 ```
-krew install dds
+$ kubectl krew install dds
 ```
 
 ## How it works

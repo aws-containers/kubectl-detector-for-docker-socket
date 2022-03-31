@@ -9,8 +9,10 @@ A `kubectl` plugin to detect if active Kubernetes workloads are mounting the doc
 Install the plugin with
 
 ```
-krew install dds
+kubectl krew install dds
 ```
+
+You can install the krew plugin manager from [their installation documentation](https://krew.sigs.k8s.io/docs/user-guide/quickstart/)
 
 ## How it works
 

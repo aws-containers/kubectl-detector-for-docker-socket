@@ -5,7 +5,7 @@ metadata:
 spec:
   version: {{ .TagName }}
   homepage: https://github.com/aws-containers/kubectl-detector-for-docker-socket
-  shortDescription: Detect if workloads are mounting docker.sock
+  shortDescription: Detect if workloads are mounting the docker socket
   description: |
     This plugin checks workloads in a Kubernetes cluster or manifest files
     and reports if any of the mounted volumes contain the string "docker.sock".
@@ -20,7 +20,7 @@ spec:
     {{addURIAndSha "https://github.com/aws-containers/kubectl-detector-for-docker-socket/releases/download/{{ .TagName }}/kubectl-detector-for-docker-socket_{{ .TagName }}_darwin_amd64.tar.gz" .TagName }}
     bin: "./kubectl-dds"
     files:
-    - from: kubectl-example
+    - from: kubectl-dds
       to: .
     - from: LICENSE
       to: .
@@ -31,7 +31,7 @@ spec:
     {{addURIAndSha "https://github.com/aws-containers/kubectl-detector-for-docker-socket/releases/download/{{ .TagName }}/kubectl-detector-for-docker-socket_{{ .TagName }}_darwin_arm64.tar.gz" .TagName }}
     bin: "./kubectl-dds"
     files:
-    - from: kubectl-example
+    - from: kubectl-dds
       to: .
     - from: LICENSE
       to: .
@@ -42,7 +42,7 @@ spec:
     {{addURIAndSha "https://github.com/aws-containers/kubectl-detector-for-docker-socket/releases/download/{{ .TagName }}/kubectl-detector-for-docker-socket_{{ .TagName }}_linux_amd64.tar.gz" .TagName }}
     bin: "./kubectl-dds"
     files:
-    - from: kubectl-example
+    - from: kubectl-dds
       to: .
     - from: LICENSE
       to: .

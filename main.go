@@ -275,7 +275,7 @@ func printResources(namespace corev1.Namespace, clientset *kubernetes.Clientset,
 		for _, v := range daemonset.Spec.Template.Spec.Volumes {
 			if v.VolumeSource.HostPath != nil {
 				// fmt.Printf("testing %s\n", v.VolumeSource.HostPath.Path)
-				if strings.Contains(v.VolumeSource.HostPath.Path, "docker.sock") {
+				if containsDockerSock(v.VolumeSource.HostPath.Path) {
 					fmt.Fprintf(w, "%s\t%s\t%s\t%s\t\n", namespaceName, "daemonset", daemonset.Name, "mounted")
 					break
 				}
@@ -312,13 +312,21 @@ func printResources(namespace corev1.Namespace, clientset *kubernetes.Clientset,
 	}
 }
 
+func containsDockerSock(s string) bool {
+	if strings.Contains(s, "docker.sock") || strings.Contains(s, "dockershim.sock") {
+		return true
+	} else {
+		return false
+	}
+}
+
 func printVolumes(w *tabwriter.Writer, volumes []corev1.Volume, namespace, resType, resName string, verbose bool) bool {
 	// initialize sockFound to use for exit code
 	sockFound := false
 	for _, v := range volumes {
 		if v.VolumeSource.HostPath != nil {
 			mounted := "not-mounted"
-			if strings.Contains(v.VolumeSource.HostPath.Path, "docker.sock") {
+			if containsDockerSock(v.VolumeSource.HostPath.Path) {
 				mounted = "mounted"
 				sockFound = true
 			}
@@ -365,7 +373,7 @@ func searchFile(path string) (int, error) {
 
 	line := 1
 	for scanner.Scan() {
-		if strings.Contains(scanner.Text(), "docker.sock") {
+		if containsDockerSock(scanner.Text()) {
 			return line, nil
 		}
 

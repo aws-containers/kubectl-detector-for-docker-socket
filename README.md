@@ -113,7 +113,7 @@ If the docker.sock volume is found in any files the cli exit code with be 1.
 
 ## Build
 
-To build the binary you can use `make dsd` or `go build -o kubectl-dds main.go`
+To build the binary you can use `make dds` or `go build -o kubectl-dds main.go`
 
 Install the `kubectl-dds` binary somewhere in your path to use it with `kubectl` or use it by itself without kubectl.
 The same kubectl authentication works with or without `kubectl` (e.g. $HOME/.kube/config or KUBECONFIG).

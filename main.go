@@ -3,13 +3,15 @@ package main
 import (
 	"bufio"
 	"context"
+	"flag"
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"text/tabwriter"
 
-	flag "github.com/spf13/pflag"
+	"github.com/spf13/pflag"
 
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
@@ -18,24 +20,29 @@ import (
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/klog/v2"
 
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 )
 
 func main() {
+
+	klog.InitFlags(nil)
+
 	var sockFound bool
 	var err error
 	// flags
-	requestedNamespace := flag.StringP("namespace", "n", "ALL", "Namespace to search for pods")
-	requestedPath := flag.StringP("filename", "f", "", "File or directory to scan")
-	help := flag.BoolP("help", "h", false, "Print usage")
-	exitErr := flag.BoolP("exit-with-error", "e", false, "Exit with error code if docker.sock found")
-	verbose := flag.BoolP("verbose", "v", false, "Enable verbose logging")
+	requestedNamespace := pflag.StringP("namespace", "n", "ALL", "Namespace to search for pods")
+	requestedPath := pflag.StringP("filename", "f", "", "File or directory to scan")
+	help := pflag.BoolP("help", "h", false, "Print usage")
+	exitErr := pflag.BoolP("exit-with-error", "e", false, "Exit with error code if docker.sock found")
+	verbose := pflag.IntP("verbose", "v", 2, "Logging level")
 
-	flag.Parse()
+	pflag.Parse()
 
+	flag.Set("v", strconv.Itoa(*verbose))
 	if *help {
-		flag.PrintDefaults()
+		pflag.PrintDefaults()
 		os.Exit(0)
 	}
 
@@ -64,7 +71,7 @@ func main() {
 	}
 }
 
-func runFiles(requestedPath string, w *tabwriter.Writer, verbose bool) (bool, error) {
+func runFiles(requestedPath string, w *tabwriter.Writer, verbose int) (bool, error) {
 	// run against local files
 
 	var files []string
@@ -98,7 +105,7 @@ func runFiles(requestedPath string, w *tabwriter.Writer, verbose bool) (bool, er
 	return sockFound, err
 }
 
-func runCluster(requestedNamespace string, w *tabwriter.Writer, verbose bool) (bool, error) {
+func runCluster(requestedNamespace string, w *tabwriter.Writer, verbose int) (bool, error) {
 
 	var sockFound bool
 	// append true or false for each namespace to report accurate value if docker.sock is found
@@ -115,7 +122,7 @@ func runCluster(requestedNamespace string, w *tabwriter.Writer, verbose bool) (b
 	fmt.Fprintf(w, "%s\t%s\t%s\t%s\t\n", "NAMESPACE", "TYPE", "NAME", "STATUS")
 
 	if requestedNamespace != "ALL" {
-		if verbose {
+		if verbose > 3 {
 			fmt.Printf("user specified namespace: %s\n", requestedNamespace)
 		}
 		namespace, err := clientset.CoreV1().Namespaces().Get(context.Background(), requestedNamespace, metav1.GetOptions{})
@@ -145,7 +152,7 @@ func runCluster(requestedNamespace string, w *tabwriter.Writer, verbose bool) (b
 	return containsTrue(sockFoundNamespaces), nil
 }
 
-func printResources(namespace corev1.Namespace, clientset *kubernetes.Clientset, w *tabwriter.Writer, verbose bool) (bool, error) {
+func printResources(namespace corev1.Namespace, clientset *kubernetes.Clientset, w *tabwriter.Writer, verbose int) (bool, error) {
 
 	var sockFoundPod, sockFoundDeploy, sockFoundStatefulSet, sockFoundJob, sockFoundCron bool
 
@@ -281,7 +288,7 @@ func printResources(namespace corev1.Namespace, clientset *kubernetes.Clientset,
 				}
 			}
 			volumeCounter++
-			if volumeCounter == len(daemonset.Spec.Template.Spec.Volumes) && verbose {
+			if volumeCounter == len(daemonset.Spec.Template.Spec.Volumes) && verbose > 3 {
 				fmt.Fprintf(w, "%s\t%s\t%s\t%s\t\n", namespaceName, "daemonset", daemonset.Name, "not-mounted")
 			}
 		}
@@ -320,7 +327,7 @@ func containsDockerSock(s string) bool {
 	}
 }
 
-func printVolumes(w *tabwriter.Writer, volumes []corev1.Volume, namespace, resType, resName string, verbose bool) bool {
+func printVolumes(w *tabwriter.Writer, volumes []corev1.Volume, namespace, resType, resName string, verbose int) bool {
 	// initialize sockFound to use for exit code
 	sockFound := false
 	for _, v := range volumes {
@@ -330,7 +337,7 @@ func printVolumes(w *tabwriter.Writer, volumes []corev1.Volume, namespace, resTy
 				mounted = "mounted"
 				sockFound = true
 			}
-			if mounted == "mounted" || verbose {
+			if mounted == "mounted" || verbose > 3 {
 				fmt.Fprintf(w, "%s\t%s\t%s\t%s\t\n", namespace, resType, resName, mounted)
 			}
 		}
@@ -338,7 +345,7 @@ func printVolumes(w *tabwriter.Writer, volumes []corev1.Volume, namespace, resTy
 	return sockFound
 }
 
-func printFiles(w *tabwriter.Writer, filePaths []string, verbose bool) (bool, error) {
+func printFiles(w *tabwriter.Writer, filePaths []string, verbose int) (bool, error) {
 	// initialize sockFound to use for exit code
 	sockFound := false
 	// print output for scanning local manifest files
@@ -352,7 +359,7 @@ func printFiles(w *tabwriter.Writer, filePaths []string, verbose bool) (bool, er
 			mounted = "mounted"
 			sockFound = true
 		}
-		if mounted == "mounted" || verbose {
+		if mounted == "mounted" || verbose > 3 {
 			fmt.Fprintf(w, "%s\t%v\t%s\t\n", file, line, mounted)
 		}
 	}

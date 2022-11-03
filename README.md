@@ -86,9 +86,9 @@ test/manifests/docker-volume.pod.kube-system.yaml       14      mounted
 test/manifests/docker-volume.statefulset.yaml           26      mounted
 ```
 
-Use the `--verbose` flag to see all scanned workloads/files
+Use the `--verbose` with a log level (1-10) to get more output
 ```
-kubectl dds --verbose
+kubectl dds --verbose=4
 ```
 example output
 ```

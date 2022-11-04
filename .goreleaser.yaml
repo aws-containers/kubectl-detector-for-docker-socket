@@ -2,7 +2,8 @@ before:
   hooks:
     - go mod tidy
 builds:
-  - binary: kubectl-dds
+  - id: kubectl-dds
+    binary: kubectl-dds
     env:
       - CGO_ENABLED=0
     goos:
@@ -25,3 +26,12 @@ changelog:
     exclude:
       - '^docs:'
       - '^test:'
+
+archives:
+- builds:
+  - kubectl-dds
+  name_template: "{{ .ProjectName }}_{{ .Tag }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+  wrap_in_directory: false
+  format: tar.gz
+  files:
+  - LICENSE

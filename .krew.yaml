@@ -17,7 +17,7 @@ spec:
       matchLabels:
         os: darwin
         arch: amd64
-    {{addURIAndSha "https://github.com/aws-containers/kubectl-detector-for-docker-socket/releases/download/{{ .TagName }}/kubectl-detector-for-docker-socket_{{ .TagName | replace "v" "" }}_darwin_amd64.tar.gz" .TagName }}
+    {{addURIAndSha "https://github.com/aws-containers/kubectl-detector-for-docker-socket/releases/download/{{ .TagName }}/kubectl-detector-for-docker-socket_{{ .TagName }}_darwin_amd64.tar.gz" .TagName }}
     bin: "./kubectl-dds"
     files:
     - from: kubectl-dds
@@ -28,7 +28,7 @@ spec:
       matchLabels:
         os: darwin
         arch: arm64
-    {{addURIAndSha "https://github.com/aws-containers/kubectl-detector-for-docker-socket/releases/download/{{ .TagName }}/kubectl-detector-for-docker-socket_{{ .TagName | replace "v" "" }}_darwin_arm64.tar.gz" .TagName }}
+    {{addURIAndSha "https://github.com/aws-containers/kubectl-detector-for-docker-socket/releases/download/{{ .TagName }}/kubectl-detector-for-docker-socket_{{ .TagName }}_darwin_arm64.tar.gz" .TagName }}
     bin: "./kubectl-dds"
     files:
     - from: kubectl-dds
@@ -39,7 +39,7 @@ spec:
       matchLabels:
         os: linux
         arch: amd64
-    {{addURIAndSha "https://github.com/aws-containers/kubectl-detector-for-docker-socket/releases/download/{{ .TagName }}/kubectl-detector-for-docker-socket_{{ .TagName | replace "v" "" }}_linux_amd64.tar.gz" .TagName }}
+    {{addURIAndSha "https://github.com/aws-containers/kubectl-detector-for-docker-socket/releases/download/{{ .TagName }}/kubectl-detector-for-docker-socket_{{ .TagName }}_linux_amd64.tar.gz" .TagName }}
     bin: "./kubectl-dds"
     files:
     - from: kubectl-dds
@@ -50,7 +50,7 @@ spec:
       matchLabels:
         os: windows
         arch: amd64
-    {{addURIAndSha "https://github.com/aws-containers/kubectl-detector-for-docker-socket/releases/download/{{ .TagName }}/kubectl-detector-for-docker-socket_{{ .TagName | replace "v" "" }}_windows_amd64.tar.gz" .TagName }}
+    {{addURIAndSha "https://github.com/aws-containers/kubectl-detector-for-docker-socket/releases/download/{{ .TagName }}/kubectl-detector-for-docker-socket_{{ .TagName }}_windows_amd64.tar.gz" .TagName }}
     bin: "./kubectl-dds.exe"
     files:
     - from: kubectl-dds.exe

@@ -17,14 +17,6 @@ builds:
         goarch: arm64
       - goos: windows
         goarch: arm64
-archives:
-- builds:
-  - kubectl-dds
-  name_template: "{{ .ProjectName }}_{{ .Tag }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
-  wrap_in_directory: false
-  format: tar.gz
-  files:
-  - LICENSE
 checksum:
   name_template: 'checksums.txt'
 changelog:

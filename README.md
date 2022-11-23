@@ -24,6 +24,7 @@ It then inspects all of the volumes in the containers and looks for any volume w
 Supported workload types:
 
 * Pods
+* ReplicaSets
 * Deployments
 * StatefulSets
 * DaemonSets

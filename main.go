@@ -158,6 +158,7 @@ func printResources(namespace corev1.Namespace, clientset *kubernetes.Clientset,
 
 	namespaceName := namespace.ObjectMeta.Name
 
+	nsReplicasets := make(map[string]*appsv1.ReplicaSet)
 	nsDeployments := make(map[string]*appsv1.Deployment)
 	nsDaemonsets := make(map[string]*appsv1.DaemonSet)
 	nsStatefulsets := make(map[string]*appsv1.StatefulSet)
@@ -194,6 +195,11 @@ func printResources(namespace corev1.Namespace, clientset *kubernetes.Clientset,
 					replica, rsErr := clientset.AppsV1().ReplicaSets(namespace.Name).Get(context.TODO(), podOwner, metav1.GetOptions{})
 					if rsErr != nil {
 						errorList = append(errorList, rsErr)
+						continue
+					}
+
+					if len(replica.OwnerReferences) == 0 {
+						nsReplicasets[replica.Name] = replica
 						continue
 					}
 
@@ -274,6 +280,15 @@ func printResources(namespace corev1.Namespace, clientset *kubernetes.Clientset,
 			}
 		}
 	}
+
+	// loop through all the unique ReplicaSets in the namespace
+	for _, replica := range nsReplicasets {
+		found := printVolumes(w, replica.Spec.Template.Spec.Volumes, namespaceName, "replicaset", replica.Name, verbose)
+		if found {
+			sockFound = true
+		}
+	}
+
 	// loop through all the unique deployments we found for volumes
 	for _, deploy := range nsDeployments {
 		found := printVolumes(w, deploy.Spec.Template.Spec.Volumes, namespaceName, "deployment", deploy.Name, verbose)

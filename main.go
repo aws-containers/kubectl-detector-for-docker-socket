@@ -154,10 +154,11 @@ func runCluster(requestedNamespace string, w *tabwriter.Writer, verbose int) (bo
 
 func printResources(namespace corev1.Namespace, clientset *kubernetes.Clientset, w *tabwriter.Writer, verbose int) (bool, error) {
 
-	var sockFoundPod, sockFoundDeploy, sockFoundStatefulSet, sockFoundJob, sockFoundCron bool
+	sockFound := false
 
 	namespaceName := namespace.ObjectMeta.Name
 
+	nsReplicasets := make(map[string]*appsv1.ReplicaSet)
 	nsDeployments := make(map[string]*appsv1.Deployment)
 	nsDaemonsets := make(map[string]*appsv1.DaemonSet)
 	nsStatefulsets := make(map[string]*appsv1.StatefulSet)
@@ -194,6 +195,11 @@ func printResources(namespace corev1.Namespace, clientset *kubernetes.Clientset,
 					replica, rsErr := clientset.AppsV1().ReplicaSets(namespace.Name).Get(context.TODO(), podOwner, metav1.GetOptions{})
 					if rsErr != nil {
 						errorList = append(errorList, rsErr)
+						continue
+					}
+
+					if len(replica.OwnerReferences) == 0 {
+						nsReplicasets[replica.Name] = replica
 						continue
 					}
 
@@ -267,13 +273,28 @@ func printResources(namespace corev1.Namespace, clientset *kubernetes.Clientset,
 				}
 			} else {
 				// Look up raw pods for volumes here
-				sockFoundPod = printVolumes(w, p.Spec.Volumes, namespaceName, "pod", p.Name, verbose)
+				found := printVolumes(w, p.Spec.Volumes, namespaceName, "pod", p.Name, verbose)
+				if found {
+					sockFound = true
+				}
 			}
 		}
 	}
+
+	// loop through all the unique ReplicaSets in the namespace
+	for _, replica := range nsReplicasets {
+		found := printVolumes(w, replica.Spec.Template.Spec.Volumes, namespaceName, "replicaset", replica.Name, verbose)
+		if found {
+			sockFound = true
+		}
+	}
+
 	// loop through all the unique deployments we found for volumes
 	for _, deploy := range nsDeployments {
-		sockFoundDeploy = printVolumes(w, deploy.Spec.Template.Spec.Volumes, namespaceName, "deployment", deploy.Name, verbose)
+		found := printVolumes(w, deploy.Spec.Template.Spec.Volumes, namespaceName, "deployment", deploy.Name, verbose)
+		if found {
+			sockFound = true
+		}
 	}
 
 	// loop through all the unique DaemonSets in the namespace
@@ -284,6 +305,7 @@ func printResources(namespace corev1.Namespace, clientset *kubernetes.Clientset,
 				// fmt.Printf("testing %s\n", v.VolumeSource.HostPath.Path)
 				if containsDockerSock(v.VolumeSource.HostPath.Path) {
 					fmt.Fprintf(w, "%s\t%s\t%s\t%s\t\n", namespaceName, "daemonset", daemonset.Name, "mounted")
+					sockFound = true
 					break
 				}
 			}
@@ -296,27 +318,32 @@ func printResources(namespace corev1.Namespace, clientset *kubernetes.Clientset,
 
 	// loop through all the unique StatefulSets in the namespace
 	for _, statefulset := range nsStatefulsets {
-		sockFoundStatefulSet = printVolumes(w, statefulset.Spec.Template.Spec.Volumes, namespaceName, "statefulset", statefulset.Name, verbose)
+		found := printVolumes(w, statefulset.Spec.Template.Spec.Volumes, namespaceName, "statefulset", statefulset.Name, verbose)
+		if found {
+			sockFound = true
+		}
 	}
 
 	// loop through all the unique Jobs in the namespace
 	for _, job := range nsJobs {
-		sockFoundJob = printVolumes(w, job.Spec.Template.Spec.Volumes, namespaceName, "job", job.Name, verbose)
+		found := printVolumes(w, job.Spec.Template.Spec.Volumes, namespaceName, "job", job.Name, verbose)
+		if found {
+			sockFound = true
+		}
 	}
 
 	// loop through all the unique CronJobs in the namespace
 	for _, cron := range nsCronJobs {
-		sockFoundCron = printVolumes(w, cron.Spec.JobTemplate.Spec.Template.Spec.Volumes, namespaceName, "cron", cron.Name, verbose)
+		found := printVolumes(w, cron.Spec.JobTemplate.Spec.Template.Spec.Volumes, namespaceName, "cron", cron.Name, verbose)
+		if found {
+			sockFound = true
+		}
 	}
 
 	if len(errorList) > 0 {
 		return false, utilerrors.NewAggregate(errorList)
 	}
-	if sockFoundPod || sockFoundDeploy || sockFoundStatefulSet || sockFoundJob || sockFoundCron {
-		return true, nil
-	} else {
-		return false, nil
-	}
+	return sockFound, nil
 }
 
 func containsDockerSock(s string) bool {

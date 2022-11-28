@@ -50,7 +50,7 @@ func main() {
 	w := new(tabwriter.Writer)
 
 	// minwidth, tabwidth, padding, padchar, flags
-	w.Init(os.Stdout, 8, 8, 0, '\t', 0)
+	w.Init(os.Stdout, 8, 8, 1, '\t', 0)
 
 	defer w.Flush()
 

@@ -37,12 +37,20 @@ func main() {
 	help := pflag.BoolP("help", "h", false, "Print usage")
 	exitErr := pflag.BoolP("exit-with-error", "e", false, "Exit with error code if docker.sock found")
 	verbose := pflag.IntP("verbose", "v", 2, "Logging level")
+	printVersion := pflag.Bool("version", false, "Print plugin version and exit")
 
 	pflag.Parse()
+
+	var version = "development"
 
 	flag.Set("v", strconv.Itoa(*verbose))
 	if *help {
 		pflag.PrintDefaults()
+		os.Exit(0)
+	}
+
+	if *printVersion {
+		fmt.Println(version)
 		os.Exit(0)
 	}
 

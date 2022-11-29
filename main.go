@@ -25,6 +25,10 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 )
 
+var (
+	version = "development"
+)
+
 func main() {
 
 	klog.InitFlags(nil)
@@ -40,8 +44,6 @@ func main() {
 	printVersion := pflag.Bool("version", false, "Print plugin version and exit")
 
 	pflag.Parse()
-
-	var version = "development"
 
 	flag.Set("v", strconv.Itoa(*verbose))
 	if *help {

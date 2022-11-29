@@ -70,21 +70,22 @@ kube-system     pod     pod-docker-volume       mounted
 ```
 
 You can run `dds` against a single manifest file or folder of manifest files (recursive).
-The repo includes a test/manifests directory.
+The repo includes a tests/manifests directory.
 
 ```
-kubectl dds --filename test
+kubectl dds --filename tests
 ```
 example output
 ```
 FILE                                                    LINE    STATUS
-test/manifests/docker-volume.cronjob.yaml               22      mounted
-test/manifests/docker-volume.daemonset.yaml             24      mounted
-test/manifests/docker-volume.deploy.test1.yaml          32      mounted
-test/manifests/docker-volume.deploy.yaml                25      mounted
-test/manifests/docker-volume.job.yaml                   17      mounted
-test/manifests/docker-volume.pod.kube-system.yaml       14      mounted
-test/manifests/docker-volume.statefulset.yaml           26      mounted
+tests/manifests/docker-volume.cronjob.yaml               22      mounted
+tests/manifests/docker-volume.daemonset.yaml             24      mounted
+tests/manifests/docker-volume.deploy.test1.yaml          32      mounted
+tests/manifests/docker-volume.deploy.yaml                25      mounted
+tests/manifests/docker-volume.job.yaml                   17      mounted
+tests/manifests/docker-volume.pod.kube-system.yaml       14      mounted
+tests/manifests/docker-volume.replicaset.yaml            25      mounted
+tests/manifests/docker-volume.statefulset.yaml           26      mounted
 ```
 
 Use the `--verbose` with a log level (1-10) to get more output
@@ -114,7 +115,7 @@ If the docker.sock volume is found in any files the cli exit code with be 1.
 
 ## Build
 
-To build the binary you can use `make dds` or `go build -o kubectl-dds main.go`
+To build the binary you can use `go build -o kubectl-dds main.go` or `make dds` to use [goreleaser](https://goreleaser.com/).
 
 Install the `kubectl-dds` binary somewhere in your path to use it with `kubectl` or use it by itself without kubectl.
 The same kubectl authentication works with or without `kubectl` (e.g. $HOME/.kube/config or KUBECONFIG).

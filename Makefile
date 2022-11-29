@@ -7,7 +7,7 @@ help:			## Show this help.
 dds: kubectl-dds	## Build kubectl-dds binary
 
 kubectl-dds: clean
-	go build -o kubectl-dds main.go
+	goreleaser build --single-target --snapshot --rm-dist
 
 eks-cluster:		## Create an eks cluster
 	eksctl create cluster --auto-kubeconfig -f tests/eksctl.yaml

@@ -40,6 +40,7 @@ func main() {
 	// flags
 	requestedNamespace := pflag.StringP("namespace", "n", "ALL", "Namespace to search for pods")
 	requestedPath := pflag.StringP("filename", "f", "", "File or directory to scan")
+	progressBar := pflag.BoolP("progress", "p", false, "Show a progress bar when scanning")
 	help := pflag.BoolP("help", "h", false, "Print usage")
 	exitErr := pflag.BoolP("exit-with-error", "e", false, "Exit with error code if docker.sock found")
 	verbose := pflag.IntP("verbose", "v", 2, "Logging level")
@@ -71,7 +72,7 @@ func main() {
 		sockFound, err = runFiles(*requestedPath, w, *verbose)
 	} else {
 		// run against a live cluster
-		sockFound, err = runCluster(*requestedNamespace, w, *verbose)
+		sockFound, err = runCluster(*requestedNamespace, w, *verbose, *progressBar)
 	}
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error: %v", err)
@@ -117,7 +118,7 @@ func runFiles(requestedPath string, w *tabwriter.Writer, verbose int) (bool, err
 	return sockFound, err
 }
 
-func runCluster(requestedNamespace string, w *tabwriter.Writer, verbose int) (bool, error) {
+func runCluster(requestedNamespace string, w *tabwriter.Writer, verbose int, progressBar bool) (bool, error) {
 
 	var sockFound bool
 	// append true or false for each namespace to report accurate value if docker.sock is found
@@ -149,19 +150,26 @@ func runCluster(requestedNamespace string, w *tabwriter.Writer, verbose int) (bo
 		}
 
 		namespaceErrors := make([]error, 0)
-		// loop through each namespace
 		numberNamespaces := len(namespaceList.Items)
-		fmt.Printf("scanning %d namespaces: \n", numberNamespaces)
-		pbar := pb.StartNew(numberNamespaces)
+		pbar := pb.New(numberNamespaces)
+		// loop through each namespace
+		if progressBar {
+			fmt.Printf("scanning %d namespaces: \n", numberNamespaces)
+			pbar.Start()
+		}
 		for _, namespace := range namespaceList.Items {
 			sockFound, err := printResources(namespace, clientset, w, verbose)
 			if err != nil {
 				namespaceErrors = append(namespaceErrors, err)
 			}
 			sockFoundNamespaces = append(sockFoundNamespaces, sockFound)
-			pbar.Increment()
+			if progressBar {
+				pbar.Increment()
+			}
 		}
-		pbar.Finish()
+		if progressBar {
+			pbar.Finish()
+		}
 		if len(namespaceErrors) > 0 {
 			return sockFound, utilerrors.NewAggregate(namespaceErrors)
 		}

@@ -69,7 +69,7 @@ func main() {
 
 	// only scan local files if -f is provided
 	if len(*requestedPath) > 0 {
-		sockFound, err = runFiles(*requestedPath, w, *verbose)
+		sockFound, err = runFiles(*requestedPath, w, *verbose, *progressBar)
 	} else {
 		// run against a live cluster
 		sockFound, err = runCluster(*requestedNamespace, w, *verbose, *progressBar)
@@ -84,7 +84,7 @@ func main() {
 	}
 }
 
-func runFiles(requestedPath string, w *tabwriter.Writer, verbose int) (bool, error) {
+func runFiles(requestedPath string, w *tabwriter.Writer, verbose int, progressBar bool) (bool, error) {
 	// run against local files
 
 	var files []string
@@ -113,7 +113,7 @@ func runFiles(requestedPath string, w *tabwriter.Writer, verbose int) (bool, err
 		files = append(files, requestedPath)
 	}
 
-	sockFound, err := printFiles(w, files, verbose)
+	sockFound, err := printFiles(w, files, verbose, progressBar)
 
 	return sockFound, err
 }
@@ -397,10 +397,16 @@ func printVolumes(w *tabwriter.Writer, volumes []corev1.Volume, namespace, resTy
 	return sockFound
 }
 
-func printFiles(w *tabwriter.Writer, filePaths []string, verbose int) (bool, error) {
+func printFiles(w *tabwriter.Writer, filePaths []string, verbose int, progressBar bool) (bool, error) {
 	// initialize sockFound to use for exit code
 	sockFound := false
 	// print output for scanning local manifest files
+	numberFilePaths := len(filePaths)
+	pbar := pb.New(numberFilePaths)
+	if progressBar {
+		fmt.Printf("Scanning %d files for docker.sock mounts", numberFilePaths)
+		pbar.Start()
+	}
 	for _, file := range filePaths {
 		mounted := "not-mounted"
 		line, err := searchFile(file)
@@ -414,6 +420,12 @@ func printFiles(w *tabwriter.Writer, filePaths []string, verbose int) (bool, err
 		if mounted == "mounted" || verbose > 3 {
 			fmt.Fprintf(w, "%s\t%v\t%s\t\n", file, line, mounted)
 		}
+		if progressBar {
+			pbar.Increment()
+		}
+	}
+	if progressBar {
+		pbar.Finish()
 	}
 	return sockFound, nil
 }

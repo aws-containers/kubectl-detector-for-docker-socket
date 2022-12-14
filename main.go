@@ -13,6 +13,8 @@ import (
 
 	"github.com/spf13/pflag"
 
+	"github.com/cheggaaa/pb/v3"
+
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -148,13 +150,18 @@ func runCluster(requestedNamespace string, w *tabwriter.Writer, verbose int) (bo
 
 		namespaceErrors := make([]error, 0)
 		// loop through each namespace
+		numberNamespaces := len(namespaceList.Items)
+		fmt.Printf("scanning %d namespaces: \n", numberNamespaces)
+		pbar := pb.StartNew(numberNamespaces)
 		for _, namespace := range namespaceList.Items {
 			sockFound, err := printResources(namespace, clientset, w, verbose)
 			if err != nil {
 				namespaceErrors = append(namespaceErrors, err)
 			}
 			sockFoundNamespaces = append(sockFoundNamespaces, sockFound)
+			pbar.Increment()
 		}
+		pbar.Finish()
 		if len(namespaceErrors) > 0 {
 			return sockFound, utilerrors.NewAggregate(namespaceErrors)
 		}

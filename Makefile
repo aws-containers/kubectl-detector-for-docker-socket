@@ -35,4 +35,4 @@ THIRD_PARTY.txt: licenses
 	mv licenses/THIRD_PARTY.txt ./
 
 licenses:
-	go-licenses save github.com/rothgar/dds --save_path ./licenses
+	go-licenses save . --save_path ./licenses

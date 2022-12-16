@@ -13,6 +13,8 @@ import (
 
 	"github.com/spf13/pflag"
 
+	"github.com/cheggaaa/pb/v3"
+
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -38,6 +40,7 @@ func main() {
 	// flags
 	requestedNamespace := pflag.StringP("namespace", "n", "ALL", "Namespace to search for pods")
 	requestedPath := pflag.StringP("filename", "f", "", "File or directory to scan")
+	progressBar := pflag.BoolP("progress", "p", false, "Show a progress bar when scanning")
 	help := pflag.BoolP("help", "h", false, "Print usage")
 	exitErr := pflag.BoolP("exit-with-error", "e", false, "Exit with error code if docker.sock found")
 	verbose := pflag.IntP("verbose", "v", 2, "Logging level")
@@ -66,10 +69,10 @@ func main() {
 
 	// only scan local files if -f is provided
 	if len(*requestedPath) > 0 {
-		sockFound, err = runFiles(*requestedPath, w, *verbose)
+		sockFound, err = runFiles(*requestedPath, w, *verbose, *progressBar)
 	} else {
 		// run against a live cluster
-		sockFound, err = runCluster(*requestedNamespace, w, *verbose)
+		sockFound, err = runCluster(*requestedNamespace, w, *verbose, *progressBar)
 	}
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error: %v", err)
@@ -81,7 +84,7 @@ func main() {
 	}
 }
 
-func runFiles(requestedPath string, w *tabwriter.Writer, verbose int) (bool, error) {
+func runFiles(requestedPath string, w *tabwriter.Writer, verbose int, progressBar bool) (bool, error) {
 	// run against local files
 
 	var files []string
@@ -110,12 +113,12 @@ func runFiles(requestedPath string, w *tabwriter.Writer, verbose int) (bool, err
 		files = append(files, requestedPath)
 	}
 
-	sockFound, err := printFiles(w, files, verbose)
+	sockFound, err := printFiles(w, files, verbose, progressBar)
 
 	return sockFound, err
 }
 
-func runCluster(requestedNamespace string, w *tabwriter.Writer, verbose int) (bool, error) {
+func runCluster(requestedNamespace string, w *tabwriter.Writer, verbose int, progressBar bool) (bool, error) {
 
 	var sockFound bool
 	// append true or false for each namespace to report accurate value if docker.sock is found
@@ -147,13 +150,25 @@ func runCluster(requestedNamespace string, w *tabwriter.Writer, verbose int) (bo
 		}
 
 		namespaceErrors := make([]error, 0)
+		numberNamespaces := len(namespaceList.Items)
+		pbar := pb.New(numberNamespaces)
 		// loop through each namespace
+		if progressBar {
+			fmt.Printf("scanning %d namespaces: \n", numberNamespaces)
+			pbar.Start()
+		}
 		for _, namespace := range namespaceList.Items {
 			sockFound, err := printResources(namespace, clientset, w, verbose)
 			if err != nil {
 				namespaceErrors = append(namespaceErrors, err)
 			}
 			sockFoundNamespaces = append(sockFoundNamespaces, sockFound)
+			if progressBar {
+				pbar.Increment()
+			}
+		}
+		if progressBar {
+			pbar.Finish()
 		}
 		if len(namespaceErrors) > 0 {
 			return sockFound, utilerrors.NewAggregate(namespaceErrors)
@@ -382,10 +397,16 @@ func printVolumes(w *tabwriter.Writer, volumes []corev1.Volume, namespace, resTy
 	return sockFound
 }
 
-func printFiles(w *tabwriter.Writer, filePaths []string, verbose int) (bool, error) {
+func printFiles(w *tabwriter.Writer, filePaths []string, verbose int, progressBar bool) (bool, error) {
 	// initialize sockFound to use for exit code
 	sockFound := false
 	// print output for scanning local manifest files
+	numberFilePaths := len(filePaths)
+	pbar := pb.New(numberFilePaths)
+	if progressBar {
+		fmt.Printf("Scanning %d files for docker.sock mounts", numberFilePaths)
+		pbar.Start()
+	}
 	for _, file := range filePaths {
 		mounted := "not-mounted"
 		line, err := searchFile(file)
@@ -399,6 +420,12 @@ func printFiles(w *tabwriter.Writer, filePaths []string, verbose int) (bool, err
 		if mounted == "mounted" || verbose > 3 {
 			fmt.Fprintf(w, "%s\t%v\t%s\t\n", file, line, mounted)
 		}
+		if progressBar {
+			pbar.Increment()
+		}
+	}
+	if progressBar {
+		pbar.Finish()
 	}
 	return sockFound, nil
 }

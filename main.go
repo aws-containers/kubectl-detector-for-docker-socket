@@ -76,6 +76,8 @@ func main() {
 	}
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error: %v", err)
+		fmt.Fprint(os.Stderr, "Warning: The following table may be incomplete due to errors detected during the run")
+		w.Flush()
 		os.Exit(1)
 	}
 	if *exitErr && sockFound {

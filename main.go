@@ -75,7 +75,9 @@ func main() {
 		sockFound, err = runCluster(*requestedNamespace, w, *verbose, *progressBar)
 	}
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "error: %v", err)
+		fmt.Fprintf(os.Stderr, "error: %v\n", err)
+		fmt.Fprintln(os.Stderr, "Warning: The following table may be incomplete due to errors detected during the run")
+		w.Flush()
 		os.Exit(1)
 	}
 	if *exitErr && sockFound {

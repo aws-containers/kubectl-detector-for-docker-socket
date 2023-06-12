@@ -294,6 +294,10 @@ func printResources(namespace corev1.Namespace, clientset *kubernetes.Clientset,
 					// this prints for pods that say they have an owner but the owner doesn't exist
 					// happens with vcluster clusters and maybe other situations.
 					fmt.Printf("could not find resource manager for type %s for pod %s\n", p.OwnerReferences[0].Kind, p.Name)
+					found := printVolumes(w, p.Spec.Volumes, namespaceName, "pod", p.Name, verbose)
+					if found {
+						sockFound = true
+					}
 					continue
 				}
 			} else {

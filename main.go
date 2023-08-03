@@ -273,9 +273,8 @@ func printResources(namespace corev1.Namespace, clientset *kubernetes.Clientset,
 						continue
 					}
 
-					// check if the job has an owner
-					// If it does then it's part of a CronJob
-					if len(job.ObjectMeta.OwnerReferences) == 0 {
+					// check if the job has an owner, and that it is of kind `CronJob`
+					if len(job.ObjectMeta.OwnerReferences) == 0 || job.ObjectMeta.OwnerReferences[0].Kind != "CronJob" {
 						if _, ok := nsJobs[job.Name]; !ok {
 							nsJobs[job.Name] = job
 						}
